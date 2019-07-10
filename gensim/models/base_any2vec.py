@@ -647,7 +647,8 @@ class BaseWordEmbeddingsModel(BaseAny2VecModel):
 
     def __init__(self, sentences=None, corpus_file=None, workers=3, vector_size=100, epochs=5, callbacks=(),
                  batch_words=10000, trim_rule=None, sg=0, alpha=0.025, window=5, seed=1, hs=0, negative=5,
-                 ns_exponent=0.75, cbow_mean=1, min_alpha=0.0001, compute_loss=False, fast_version=0, **kwargs):
+                 ns_exponent=0.75, cbow_mean=1, min_alpha=0.0001, compute_loss=False, fast_version=0,
+                 dict_location2geo=None, dict_geo2location=None, **kwargs):
         """
 
         Parameters
@@ -734,6 +735,9 @@ class BaseWordEmbeddingsModel(BaseAny2VecModel):
         self.min_alpha_yet_reached = float(alpha)
         self.corpus_count = 0
         self.corpus_total_words = 0
+        self.dict_location2geo = dict_location2geo
+        self.dict_geo2location = dict_geo2location
+        
 
         super(BaseWordEmbeddingsModel, self).__init__(
             workers=workers, vector_size=vector_size, epochs=epochs, callbacks=callbacks, batch_words=batch_words)

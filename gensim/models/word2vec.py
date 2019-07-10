@@ -443,6 +443,13 @@ def train_sg_pair(model, word, context_index, alpha, learn_vectors=True, learn_h
     if model.negative:
         # use this word (label = 1) + `negative` other random words not from this sentence (label = 0)
         word_indices = [predict_word.index]
+        if word in model.dict_location2geo:
+            this_geo = model.dict_location2geo[word]
+            neg_location_in_geo = random.choice(model.dict_geo2location[this_geo])
+            if neg_location_in_geo in model.wv.vocab:
+                w = model.wv.vocab[neg_location_in_geo].index
+                if w != predict_word.index:
+                    word_indices.append(w)
         while len(word_indices) < model.negative + 1:
             w = model.cum_table.searchsorted(model.random.randint(model.cum_table[-1]))
             if w != predict_word.index:

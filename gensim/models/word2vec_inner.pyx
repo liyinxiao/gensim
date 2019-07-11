@@ -551,8 +551,8 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
             c.indexes[effective_words] = word.index
             
             word_neg_index = <unsigned int>4294967295
-            if word in model.dict_location2geo:
-                this_geo = model.dict_location2geo[word]
+            if token in model.dict_location2geo:
+                this_geo = model.dict_location2geo[token]
                 neg_location_in_geo = random.choice(model.dict_geo2location[this_geo])
                 if neg_location_in_geo in model.wv.vocab and model.wv.vocab[neg_location_in_geo].index != word.index:
                     word_neg_index = model.wv.vocab[neg_location_in_geo].index

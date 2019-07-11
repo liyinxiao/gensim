@@ -159,7 +159,7 @@ cdef inline unsigned long long random_int32(unsigned long long *next_random) nog
 cdef unsigned long long w2v_fast_sentence_sg_neg(
     const int negative, np.uint32_t *cum_table, unsigned long long cum_table_len,
     REAL_t *syn0, REAL_t *syn1neg, const int size, const np.uint32_t word_index,
-    const np.uint32_t word2_index, const REAL_t alpha, REAL_t *work,
+    const np.uint32_t word2_index, const np.uint32_t word_neg_index, const REAL_t alpha, REAL_t *work,
     unsigned long long next_random, REAL_t *word_locks,
     const int _compute_loss, REAL_t *_running_training_loss_param) nogil:
     """Train on a single effective word from the current batch, using the Skip-Gram model.
@@ -218,6 +218,11 @@ cdef unsigned long long w2v_fast_sentence_sg_neg(
         if d == 0:
             target_index = word_index
             label = ONEF
+        elif d == 1 and word_neg_index != <unsigned int>4294967295:
+            target_index = word_neg_index
+            if target_index == word_index:
+                continue
+            label = <REAL_t>0.0
         else:
             target_index = bisect_left(cum_table, (next_random >> 16) % cum_table[cum_table_len-1], 0, cum_table_len)
             next_random = (next_random * <unsigned long long>25214903917ULL + 11) & modulo
@@ -523,6 +528,7 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
 
     """
     cdef Word2VecConfig c
+    cdef Word2VecConfig c2
     cdef int i, j, k
     cdef int effective_words = 0, effective_sentences = 0
     cdef int sent_idx, idx_start, idx_end
@@ -543,6 +549,15 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
             if c.sample and word.sample_int < random_int32(&c.next_random):
                 continue
             c.indexes[effective_words] = word.index
+            
+            word_neg_index = <unsigned int>4294967295
+            if word in model.dict_location2geo:
+                this_geo = model.dict_location2geo[word]
+                neg_location_in_geo = random.choice(model.dict_geo2location[this_geo])
+                if neg_location_in_geo in model.wv.vocab and model.wv.vocab[neg_location_in_geo].index != word.index:
+                    word_neg_index = model.wv.vocab[neg_location_in_geo].index
+            c2.indexes[effective_words] = word_neg_index
+            
             if c.hs:
                 c.codelens[effective_words] = <int>len(word.code)
                 c.codes[effective_words] = <np.uint8_t *>np.PyArray_DATA(word.code)
@@ -582,7 +597,7 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
                     if c.hs:
                         w2v_fast_sentence_sg_hs(c.points[i], c.codes[i], c.codelens[i], c.syn0, c.syn1, c.size, c.indexes[j], c.alpha, c.work, c.word_locks, c.compute_loss, &c.running_training_loss)
                     if c.negative:
-                        c.next_random = w2v_fast_sentence_sg_neg(c.negative, c.cum_table, c.cum_table_len, c.syn0, c.syn1neg, c.size, c.indexes[i], c.indexes[j], c.alpha, c.work, c.next_random, c.word_locks, c.compute_loss, &c.running_training_loss)
+                        c.next_random = w2v_fast_sentence_sg_neg(c.negative, c.cum_table, c.cum_table_len, c.syn0, c.syn1neg, c.size, c.indexes[i], c.indexes[j], c2.indexes[i], c.alpha, c.work, c.next_random, c.word_locks, c.compute_loss, &c.running_training_loss)
 
     model.running_training_loss = c.running_training_loss
     return effective_words

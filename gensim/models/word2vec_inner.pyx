@@ -187,6 +187,8 @@ cdef unsigned long long w2v_fast_sentence_sg_neg(
         Index of the current training word in the vocabulary.
     word2_index
         Index of the context word in the vocabulary.
+    word_neg_index
+        Index of the negatively sampled word within geo in the vocabulary.
     alpha
         Learning rate.
     work

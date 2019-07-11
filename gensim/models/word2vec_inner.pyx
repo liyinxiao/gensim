@@ -12,7 +12,7 @@
 
 import cython
 import numpy as np
-
+import random
 cimport numpy as np
 
 from libc.math cimport exp

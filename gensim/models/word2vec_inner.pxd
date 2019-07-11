@@ -101,7 +101,7 @@ cdef void w2v_fast_sentence_sg_hs(
 cdef unsigned long long w2v_fast_sentence_sg_neg(
     const int negative, np.uint32_t *cum_table, unsigned long long cum_table_len,
     REAL_t *syn0, REAL_t *syn1neg, const int size, const np.uint32_t word_index,
-    const np.uint32_t word2_index, const REAL_t alpha, REAL_t *work,
+    const np.uint32_t word2_index, const np.uint32_t word_neg_index, const REAL_t alpha, REAL_t *work,
     unsigned long long next_random, REAL_t *word_locks,
     const int _compute_loss, REAL_t *_running_training_loss_param) nogil
 

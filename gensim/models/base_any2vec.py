@@ -648,7 +648,7 @@ class BaseWordEmbeddingsModel(BaseAny2VecModel):
     def __init__(self, sentences=None, corpus_file=None, workers=3, vector_size=100, epochs=5, callbacks=(),
                  batch_words=10000, trim_rule=None, sg=0, alpha=0.025, window=5, seed=1, hs=0, negative=5,
                  ns_exponent=0.75, cbow_mean=1, min_alpha=0.0001, compute_loss=False, fast_version=0,
-                 dict_location2geo=None, dict_geo2location=None, **kwargs):
+                 dict_location2geo=None, dict_geo2location=None, dict_geo2locationsize=None, **kwargs):
         """
 
         Parameters
@@ -715,6 +715,12 @@ class BaseWordEmbeddingsModel(BaseAny2VecModel):
             :attr:`~gensim.models.base_any2vec.BaseWordEmbeddingsModel.running_training_loss` attribute.
         fast_version : {-1, 1}, optional
             Whether or not the fast cython implementation of the internal training methods is available. 1 means it is.
+        dict_location2geo: dictionary
+            Given location, return its geo.
+        dict_geo2location: dictionary
+            Given geo, return locations that belong to it. 
+        dict_geo2locationsize: dictionary
+            Given geo, return number of locations that belong to it.
         **kwargs : object
             Key word arguments needed to allow children classes to accept more arguments.
 
@@ -737,6 +743,7 @@ class BaseWordEmbeddingsModel(BaseAny2VecModel):
         self.corpus_total_words = 0
         self.dict_location2geo = dict_location2geo
         self.dict_geo2location = dict_geo2location
+        self.dict_geo2locationsize = dict_geo2locationsize
         
 
         super(BaseWordEmbeddingsModel, self).__init__(

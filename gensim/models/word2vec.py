@@ -667,7 +667,7 @@ class Word2Vec(BaseWordEmbeddingsModel):
                  max_vocab_size=None, sample=1e-3, seed=1, workers=3, min_alpha=0.0001,
                  sg=0, hs=0, negative=5, ns_exponent=0.75, cbow_mean=1, hashfxn=hash, iter=5, null_word=0,
                  trim_rule=None, sorted_vocab=1, batch_words=MAX_WORDS_IN_BATCH, compute_loss=False, callbacks=(),
-                 max_final_vocab=None, dict_location2geo=None, dict_geo2location=None):
+                 max_final_vocab=None, dict_location2geo=None, dict_geo2location=None, dict_geo2locationsize=None):
         """
 
         Parameters
@@ -787,7 +787,8 @@ class Word2Vec(BaseWordEmbeddingsModel):
             sentences=sentences, corpus_file=corpus_file, workers=workers, vector_size=size, epochs=iter,
             callbacks=callbacks, batch_words=batch_words, trim_rule=trim_rule, sg=sg, alpha=alpha, window=window,
             seed=seed, hs=hs, negative=negative, cbow_mean=cbow_mean, min_alpha=min_alpha, compute_loss=compute_loss,
-            fast_version=FAST_VERSION, dict_location2geo=dict_location2geo, dict_geo2location=dict_geo2location)
+            fast_version=FAST_VERSION, dict_location2geo=dict_location2geo, dict_geo2location=dict_geo2location,
+            dict_geo2locationsize=dict_geo2locationsize)
 
     def _do_train_epoch(self, corpus_file, thread_id, offset, cython_vocab, thread_private_mem, cur_epoch,
                         total_examples=None, total_words=None, **kwargs):

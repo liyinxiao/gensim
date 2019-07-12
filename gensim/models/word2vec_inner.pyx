@@ -12,7 +12,7 @@
 
 import cython
 import numpy as np
-import random
+from libc.stdlib cimport rand, RAND_MAX
 cimport numpy as np
 
 from libc.math cimport exp
@@ -534,9 +534,10 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
     cdef int effective_words = 0, effective_sentences = 0
     cdef int sent_idx, idx_start, idx_end
     cdef unsigned int word_neg_sampled_index
+    # cdef unsigned int word_neg_list[MAX_SENTENCE_LEN][2 * c.window + 1]
+    cdef unsigned int word_neg_list[10000][11] 
     
     init_w2v_config(&c, model, alpha, compute_loss, _work)
-    word_neg_list = {}
 
     # prepare C structures so we can go "full C" and release the Python GIL
     vlookup = model.wv.vocab
@@ -552,12 +553,11 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
                 continue
             c.indexes[effective_words] = word.index
             
-            word_neg_list[effective_words] = []
             for i in range(2 * c.window + 1):
                 word_neg_index = <unsigned int>4294967295
                 if token in model.dict_location2geo:
                     this_geo = model.dict_location2geo[token]
-                    neg_location_in_geo = random.choice(model.dict_geo2location[this_geo])
+                    neg_location_in_geo = model.dict_geo2location[this_geo][rand() % model.dict_geo2locationsize[this_geo]]
                     if neg_location_in_geo in model.wv.vocab and model.wv.vocab[neg_location_in_geo].index != word.index:
                         word_neg_index = model.wv.vocab[neg_location_in_geo].index
                 word_neg_list[effective_words].append(word_neg_index)
@@ -601,8 +601,7 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
                     if c.hs:
                         w2v_fast_sentence_sg_hs(c.points[i], c.codes[i], c.codelens[i], c.syn0, c.syn1, c.size, c.indexes[j], c.alpha, c.work, c.word_locks, c.compute_loss, &c.running_training_loss)
                     if c.negative:
-                        with gil:
-                            word_neg_sampled_index = word_neg_list[i][j % (2 * c.window + 1)]
+                        word_neg_sampled_index = word_neg_array[i][j % (2 * c.window + 1)]
                         c.next_random = w2v_fast_sentence_sg_neg(c.negative, c.cum_table, c.cum_table_len, c.syn0, c.syn1neg, c.size, c.indexes[i], c.indexes[j], word_neg_sampled_index, c.alpha, c.work, c.next_random, c.word_locks, c.compute_loss, &c.running_training_loss)
 
     model.running_training_loss = c.running_training_loss

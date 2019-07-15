@@ -503,7 +503,9 @@ cdef init_w2v_config(Word2VecConfig *c, model, alpha, compute_loss, _work, _neu1
     if _neu1 is not None:
         c[0].neu1 = <REAL_t *>np.PyArray_DATA(_neu1)
 
-
+        
+@cython.boundscheck(False)
+@cython.wraparound(False)   # often useful for numeric arrays
 def train_batch_sg(model, sentences, alpha, _work, compute_loss):
     """Update skip-gram model by training on a batch of sentences.
 

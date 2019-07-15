@@ -534,8 +534,12 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
     cdef int effective_words = 0, effective_sentences = 0
     cdef int sent_idx, idx_start, idx_end
     cdef unsigned int word_neg_sampled_index
-    # cdef unsigned int word_neg_list[MAX_SENTENCE_LEN][2 * c.window + 1]
-    cdef unsigned int word_neg_list[10000][11] 
+    # cdef unsigned int word_neg_array[MAX_SENTENCE_LEN][2 * c.window + 1]
+    cdef unsigned int word_neg_array[10000][11]
+    cdef unsigned int geo_location_size
+    cdef unsigned int this_geo
+    cdef unsigned int word_neg_index
+    cdef unsigned int neg_location_in_geo_index
     
     init_w2v_config(&c, model, alpha, compute_loss, _work)
 
@@ -557,10 +561,12 @@ def train_batch_sg(model, sentences, alpha, _work, compute_loss):
                 word_neg_index = <unsigned int>4294967295
                 if token in model.dict_location2geo:
                     this_geo = model.dict_location2geo[token]
-                    neg_location_in_geo = model.dict_geo2location[this_geo][rand() % model.dict_geo2locationsize[this_geo]]
+                    geo_location_size = model.dict_geo2locationsize[this_geo]
+                    neg_location_in_geo_index = rand() % geo_location_size
+                    neg_location_in_geo = model.dict_geo2location[this_geo][neg_location_in_geo_index]
                     if neg_location_in_geo in model.wv.vocab and model.wv.vocab[neg_location_in_geo].index != word.index:
                         word_neg_index = model.wv.vocab[neg_location_in_geo].index
-                word_neg_list[effective_words].append(word_neg_index)
+                word_neg_array[effective_words].append(word_neg_index)
             
             if c.hs:
                 c.codelens[effective_words] = <int>len(word.code)
